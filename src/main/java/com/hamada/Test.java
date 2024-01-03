@@ -43,8 +43,8 @@ public class Test {
         }
 
         // Shut down the scheduler
-        scheduler.shutdown(delay);
-        scheduler2.shutdown(delay);
+        scheduler.shutdown(delay,unit );
+        scheduler2.shutdown(delay, unit);
 
 
 

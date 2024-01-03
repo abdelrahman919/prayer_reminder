@@ -3,7 +3,7 @@ package com.hamada;
 import java.util.Map;
 
 public class TimingsReminder {
-    Map<String, String> prayerTimingsMap = Map.ofEntries(
+    static Map<String, String> prayerTimingsMap = Map.ofEntries(
             Map.entry("Fajr", "05:25"),
             Map.entry("Dhuhr", "12:04"),
             Map.entry("Asr", "14:50"),

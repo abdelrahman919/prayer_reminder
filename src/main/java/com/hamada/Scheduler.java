@@ -17,10 +17,11 @@ public class Scheduler {
         }
     }
 
-    void shutdown(long delay ) {
+    void shutdown(long delay, TimeUnit unit) {
         try {
             singleScheduler.shutdown();
-            singleScheduler.awaitTermination(delay, TimeUnit.SECONDS);
+            boolean b = singleScheduler.awaitTermination(delay, unit);
+            System.out.println("scheduler shutdown");
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
