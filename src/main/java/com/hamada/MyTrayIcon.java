@@ -24,6 +24,7 @@ public class MyTrayIcon {
             trayIcon.setToolTip("System tray icon demo");
             tray.add(trayIcon);
             return trayIcon;
+
         }catch (AWTException e){
             System.out.println("system doesn't support tray icon");
             return null;
@@ -50,15 +51,24 @@ public class MyTrayIcon {
             MyTrayIcon td = new MyTrayIcon();
             java.awt.TrayIcon trayIcon = td.createTrayIcon();
 
-            td.displayTray("Sb7",trayIcon);
 
-            Runnable trayTask = () -> {
+
+            // Remove the TrayIcon from the SystemTray
+            if (trayIcon != null) {
+                SystemTray.getSystemTray().remove(trayIcon);
+            }
+
+
+
+//            td.displayTray("Sb7",trayIcon);
+
+/*            Runnable trayTask = () -> {
                 td.displayTray("SBA7OOOO",trayIcon);
             };
             Scheduler scheduler = new Scheduler();
-            scheduler.schedule(trayTask,5L,TimeUnit.SECONDS);
+            scheduler.schedule(trayTask,3L,TimeUnit.SECONDS);
 
-            scheduler.shutdown(5, TimeUnit.SECONDS);
+            scheduler.shutdown(5, TimeUnit.SECONDS);*/
         } else {
             System.err.println("System tray not supported!");
         }

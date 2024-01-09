@@ -17,13 +17,50 @@ public class Scheduler {
         }
     }
 
-    void shutdown(long delay, TimeUnit unit) {
-        try {
+        void shutdown() {
             singleScheduler.shutdown();
-            boolean b = singleScheduler.awaitTermination(delay, unit);
-            System.out.println("scheduler shutdown");
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            System.out.println("shutdown");
         }
+    public ScheduledExecutorService getSingleScheduler() {
+        return singleScheduler;
+    }
+
+    public static void main(String[] args) {
+        Scheduler scheduler = new Scheduler();
+        Scheduler scheduler2 = new Scheduler();
+
+        for (int i =0; i<4; i++){
+            scheduler.schedule(() -> System.out.println(3), 1+i, TimeUnit.SECONDS);
+            scheduler.schedule(() -> System.out.println(4), 1+i, TimeUnit.SECONDS);
+        }
+
+
+/*
+        scheduler.shutdown(5,TimeUnit.SECONDS);
+        scheduler2.shutdown(5,TimeUnit.SECONDS);
+*/
+
+        scheduler.singleScheduler.shutdown();
+        scheduler2.singleScheduler.shutdown();
+
+
+
+
     }
 }
+
+
+
+
+/*    void shutdown(long delay, TimeUnit unit) {
+        singleScheduler.shutdown();
+        try {
+            singleScheduler.awaitTermination(delay, unit);
+            singleScheduler.shutdownNow();
+            System.out.println("scheduler shutdown");
+
+        //    System.out.println(b);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }*/

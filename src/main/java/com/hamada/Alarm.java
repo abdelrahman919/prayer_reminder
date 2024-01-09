@@ -6,7 +6,7 @@ public class Alarm {
 
     static Runnable startAlarm = () -> {
         try {
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < 5; i++) {
                 Toolkit.getDefaultToolkit().beep();
                 Thread.sleep(1000);
             }

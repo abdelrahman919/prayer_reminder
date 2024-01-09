@@ -12,15 +12,18 @@ public class FileHandler {
 
     final static Path filePath = Path.of("D:\\java-projects\\prayer_reminder\\local_data.txt");
 
-     static public String readFromFile() throws IOException {
-        return Files.readString(filePath);
-    }
+     static public String readFromFile(){
+         try {
+             return Files.readString(filePath);
+         }catch (IOException e){e.printStackTrace();}
+         return null;
+     }
 
 
     static public void writeToFile(String textToWrite ){
         try {
             // Write the text to the file
-            Files.writeString(filePath, textToWrite , StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+            Files.writeString(filePath, textToWrite , StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
 
             System.out.println("Text has been written to the file.");
         } catch (IOException e) {
@@ -40,13 +43,5 @@ public class FileHandler {
         System.out.println(data);
 
 
-/*        try {
-            // Write the text to the file
-            Files.writeString(filePath, textToWrite, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-
-            System.out.println("Text has been written to the file.");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
     }
 }

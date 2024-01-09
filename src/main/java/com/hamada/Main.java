@@ -1,5 +1,8 @@
 package com.hamada;
 
+import com.hamada.gui.HomeForm;
+
+import javax.swing.*;
 import java.awt.*;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -9,10 +12,11 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+
 public class Main {
     public static void main(String[] args)  {
 
-        Map<String,String> prayerTimings = new HashMap<>();
+         Map<String,String>  prayerTimings = new HashMap<>();
         LocalDate date = null;
         List<String> sortedPrayers = new ArrayList<>(List.of("Fajr","Dhuhr","Asr","Maghrib","Isha"));
 
@@ -55,16 +59,19 @@ public class Main {
         Scheduler scheduler2 = new Scheduler();
         TimeUnit unit = TimeUnit.SECONDS;
         TrayIcon trayIcon= MyTrayIcon.createTrayIcon();
+        int period = 0;
         long delay = 0;
+        long remainingTime = 0;
         //Calculate time delay for each prayer
         for (String prayer:sortedPrayers) {
             LocalTime currPrayerTime =LocalTime.parse(prayerTimings.get(prayer));
             //Check if prayer has already passed
             if (!currPrayerTime.isBefore(LocalTime.now())) {
                 //If not calculate delay
-                delay = Duration.between(LocalTime.now(),currPrayerTime).toSeconds() -(15*60);
+                delay = Duration.between(LocalTime.now(),currPrayerTime).toSeconds() -(period*60);
+                remainingTime = Duration.between(LocalTime.now(),currPrayerTime).toMinutes();
                 System.out.println(" "+delay+" ");
-                String message = String.format("15 Minutes left until %s ", prayer);
+                String message = String.format("%d Minutes left until %s ",remainingTime , prayer);
                 //schedule an alarm with different delay for each prayer
                 scheduler.schedule(
                         MyTrayIcon.displayTrayRunnable(message, trayIcon),
@@ -74,9 +81,21 @@ public class Main {
 
         }
 
+        scheduler.schedule(() -> {
+            if (trayIcon != null) {
+                SystemTray.getSystemTray().remove(trayIcon);
+            }
+        },delay,unit);
+//        HomeForm homeForm = new HomeForm();
+
+
         //the delay in shutdown methods is the delay of last prayer +10
-        scheduler.shutdown(delay+10L, unit);
-        scheduler2.shutdown(delay+10L, unit);
+        System.out.println("Delay= "+delay);
+        scheduler.shutdown();
+        scheduler2.shutdown();
+
+
+
 
 
 
@@ -87,3 +106,8 @@ public class Main {
 
 
 }
+//        SwingUtilities.invokeLater(new Runnable() {
+//            public void run() {
+//                MainForm.createAndShowGUI();
+//            }
+//        });
