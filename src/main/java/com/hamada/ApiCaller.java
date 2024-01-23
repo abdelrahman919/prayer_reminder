@@ -6,18 +6,22 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ApiCaller {
 
     //TLDR: calls the api and returns a map of the 5 prayers and their timings
-    public static Map<String,String> getPrayerTimings() {
+    static String country;
+    static String city;
+
+    public static Map<String, String> getPrayerTimings(String city, String country) {
         try {
             //TODO: DYNAMIC CITY AND COUNTRY, METHOD CAN BE OPTIONAL
 
             // Specify the API endpoint
-            String apiUrl = "http://api.aladhan.com/v1/timingsByCity?city=Alexandria&country=Egypt";
+            String apiUrl = String.format("http://api.aladhan.com/v1/timingsByCity?city=%s&country=%s", city, country);
 
             // Create a URI object
             URI uri = URI.create(apiUrl);
@@ -64,4 +68,16 @@ public class ApiCaller {
         }
         return null;
     }
+
+    public static Map<String, String> getDummyMap() {
+        Map<String, String> prayerTimingsMapUnModifiable = Map.ofEntries(
+                Map.entry("Asr", "15:04"),
+                Map.entry("Isha", "23:00"),
+                Map.entry("Fajr", "06:59"),
+                Map.entry("Dhuhr", "12:46"),
+                Map.entry("Maghrib", "17:25")
+        );
+        return new HashMap<>(prayerTimingsMapUnModifiable);
+    }
+
 }

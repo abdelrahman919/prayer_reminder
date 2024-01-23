@@ -1,0 +1,5 @@
+reminder:true
+adan:true
+country:Egypt
+city:Alexandria
+period:15
