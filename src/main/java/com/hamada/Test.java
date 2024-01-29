@@ -6,13 +6,12 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalAmount;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class Test {
@@ -61,8 +60,6 @@ public class Test {
         scheduler.shutdown();
         scheduler2.shutdown();*/
     ////////////////////////////////////////////////
-
-        System.out.println(LocalTime.of(23, 16, 59, 999999999).plus(Duration.ofMillis(1000)));
 
 
 

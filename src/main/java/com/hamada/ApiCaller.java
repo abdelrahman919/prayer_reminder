@@ -1,5 +1,6 @@
 package com.hamada;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URI;
@@ -13,12 +14,11 @@ import java.util.stream.Collectors;
 public class ApiCaller {
 
     //TLDR: calls the api and returns a map of the 5 prayers and their timings
-    static String country;
-    static String city;
+    private static String country;
+    private static String city;
 
-    public static Map<String, String> getPrayerTimings(String city, String country) {
+    public static Map<String, String> getPrayerTimings() {
         try {
-            //TODO: DYNAMIC CITY AND COUNTRY, METHOD CAN BE OPTIONAL
 
             // Specify the API endpoint
             String apiUrl = String.format("http://api.aladhan.com/v1/timingsByCity?city=%s&country=%s", city, country);
@@ -67,6 +67,22 @@ public class ApiCaller {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static String getCountry() {
+        return country;
+    }
+
+    public static void setCountry(String country) {
+        ApiCaller.country = country;
+    }
+
+    public static String getCity() {
+        return city;
+    }
+
+    public static void setCity(String city) {
+        ApiCaller.city = city;
     }
 
     public static Map<String, String> getDummyMap() {

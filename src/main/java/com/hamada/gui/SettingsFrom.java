@@ -24,18 +24,27 @@ public class SettingsFrom extends JDialog {
     boolean adanSelected;
     boolean reminderSelected;
     boolean comboBoxChanged;
-    Settings settings ;
+    Settings settings;
 
 
+    public static boolean isNumeric(String s) {
+        try {
+            Double.parseDouble(s);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
 
 
-    public SettingsFrom() {
+    public SettingsFrom(Settings settings) {
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         pack();
+        this.settings = settings;
         loadSettingsStatus();
 
         buttonOK.addActionListener(new ActionListener() {
@@ -99,106 +108,24 @@ public class SettingsFrom extends JDialog {
     //Loads the status of Radio buttons (whether selected or not) from file to avoid confusion
     //If the file doesn't exist or any error occurs it writes default values to the file and uses them
     private void loadSettingsStatus() {
-        String status = FileHandler.readFromFile(FileHandler.settingsFilePath);
-        try {
-            boolean adanStatus = Arrays.stream(status.split("\n")).filter(string -> string.contains("adan"))
-                    .map(string -> string.contains("true")).findAny().get();
-            boolean reminderStatus = Arrays.stream(status.split("\n")).filter(string -> string.contains("reminder"))
-                    .map(string -> string.contains("true")).findAny().get();
-
-            scheduleAdanRadioButton.setSelected(adanStatus);
-            scheduleReminderRadioButton.setSelected(reminderStatus);
-        }catch (Exception e){
-            status = """
-                    city:Alexandria
-                    country:Egypt
-                    adan:true
-                    reminder:true
-                    period:15""";
-            FileHandler.writeToFile(status, FileHandler.settingsFilePath);
-            scheduleAdanRadioButton.setSelected(true);
-            scheduleReminderRadioButton.setSelected(true);
-        }
-
-
+        scheduleAdanRadioButton.setSelected(settings.isAdan());
+        scheduleReminderRadioButton.setSelected(settings.isReminder());
     }
-
-
-    private void cleanup() {
-        buttonOK.removeActionListener(buttonOK.getActionListeners()[0]);
-        buttonCancel.removeActionListener(buttonCancel.getActionListeners()[0]);
-        scheduleAdanRadioButton.removeActionListener(scheduleAdanRadioButton.getActionListeners()[0]);
-        scheduleReminderRadioButton.removeActionListener(scheduleReminderRadioButton.getActionListeners()[0]);
-        comboBox1.removeActionListener(comboBox1.getActionListeners()[0]);
-        comboBox1.removePropertyChangeListener(comboBox1.getPropertyChangeListeners()[0]);
-    }
-
 
     private void onOK() {
-        // add your code here
-        if (adanSelected || reminderSelected || comboBoxChanged ||
-        !countryTextField.getText().isEmpty() || !cityTextField.getText().isEmpty()) {
-            String settings = FileHandler.readFromFile(FileHandler.settingsFilePath);
-            assert settings != null;
-            String adan = "";
-            String reminder = "";
-            String country = "";
-            String city = "";
-            String period = "";
-
-            for (String setting : settings.split("\n")) {
-                if (setting.contains("adan")) {
-                    adan = setting;
-                } else if (setting.contains("reminder")) {
-                    reminder = setting;
-                } else if (setting.contains("country")) {
-                    country = setting;
-                } else if (setting.contains("city")) {
-                    city = setting;
-                } else if (setting.contains("period")) {
-                    period = setting;
-                }
-            }
-            if (reminderSelected) {
-                if (scheduleReminderRadioButton.isSelected()) {
-                    reminder = "reminder: true";
-                } else {
-                    reminder = "reminder: false";
-                }
-                reminderSelected = false;
-            }
-
-            if (adanSelected) {
-                if (scheduleAdanRadioButton.isSelected()) {
-                    adan = "adan: true";
-                } else {
-                    adan = "adan: false";
-                }
-                adanSelected = false;
-            }
-
-            if (countryTextField.getText() != null && !countryTextField.getText().isEmpty()) {
-/*            settings= Arrays.stream(settings.split("\n")).map(string -> string.contains("country") ?
-                    "country:" + countryTextField.getText() : string).collect(Collectors.joining("\n"));
-            FileHandler.writeToFile(settings,FileHandler.settingsFilePath);*/
-                country = "country:" + countryTextField.getText();
-            }
-
-            if (cityTextField != null && !cityTextField.getText().isEmpty()) {
-                city = "city:" + cityTextField.getText();
-            }
-
-            if (comboBoxChanged) {
-                period = "period:" + Objects.requireNonNull(comboBox1.getSelectedItem());
-            }
-            FileHandler.writeToFile(String.format("""
-                    %s
-                    %s
-                    %s
-                    %s
-                    %s""", reminder, adan, country, city, period), FileHandler.settingsFilePath);
+        // Sync any settings change and save to file
+        settings.setAdan(scheduleAdanRadioButton.isSelected());
+        settings.setReminder(scheduleReminderRadioButton.isSelected());
+        if (!countryTextField.getText().isEmpty() && !isNumeric(countryTextField.getText())) {
+            settings.setCountry(countryTextField.getText().strip());
         }
-        cleanup();
+        if (!cityTextField.getText().isEmpty() && !isNumeric(cityTextField.getText())) {
+            settings.setCity(cityTextField.getText().strip());
+        }
+        if (comboBoxChanged) {
+            settings.setPeriod(Integer.parseInt((String) comboBox1.getSelectedItem()));
+        }
+        FileHandler.saveSettings(settings);
         dispose();
 
     }
@@ -209,11 +136,11 @@ public class SettingsFrom extends JDialog {
     }
 
     public static void main(String[] args) {
-        SettingsFrom dialog = new SettingsFrom();
+        //    SettingsFrom dialog = new SettingsFrom();
       /*  dialog.pack();
         dialog.setVisible(true);*/
 
         System.exit(0);
-    //    SwingUtilities.invokeLater(SettingsFrom::new);
+        //    SwingUtilities.invokeLater(SettingsFrom::new);
     }
 }

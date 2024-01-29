@@ -2,11 +2,7 @@ package com.hamada;
 
 import com.hamada.gui.HomeForm;
 
-import javax.swing.*;
-import java.awt.*;
-import java.time.Duration;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -18,10 +14,19 @@ public class Main {
 
 
     public static void main(String[] args)  {
+        Map<String,String>  prayerTimings = new HashMap<>();
+        LocalDate date ;
+        Settings settings = FileHandler.readSettings();
+        Scheduler adanScheduler = new Scheduler();
+        Scheduler reminderScheduler = new Scheduler();
 
-         Map<String,String>  prayerTimings = new HashMap<>();
-        LocalDate date = null;
-        List<String> sortedPrayers = new ArrayList<>(List.of("Fajr","Dhuhr","Asr","Maghrib","Isha"));
+        //Syncing classes with current settings
+        Scheduler.isAdanScheduled = settings.isAdan();
+        Scheduler.isReminderScheduled = settings.isReminder();
+        Scheduler.period = settings.getPeriod();
+        ApiCaller.setCity(settings.getCity());
+        ApiCaller.setCountry(settings.getCountry());
+
 
         //Try reading data from file
         String[] local_data = new String[0];
@@ -30,74 +35,60 @@ public class Main {
             local_data = FileHandler.readFromFile(FileHandler.prayerFilePath).split("\n");
 
             for (String currentString : local_data) {
-                //if it starts with "" then it's the map
-                if (currentString.startsWith("{")) {
+
+                //if the string starts with "{" then it's the map if not then it's the date
+                if (!currentString.startsWith("{")) {
+                    date = LocalDate.parse(currentString);
+                    //If the date save in file isn't of today's date then it's outdated
+                    //So we  call the api to fetch the up-to-date data and save it
+                    // This is to eliminate unnecessary api calls (even-though this one is free :D )
+                    if (!Objects.equals(date, LocalDate.now())) {
+                        prayerTimings = ApiCaller.getPrayerTimings();
+                        if (prayerTimings != null) {
+                            System.out.println("API CALLED");
+                            FileHandler.writeToFile(prayerTimings.toString() + "\n" + LocalDate.now().toString(), FileHandler.prayerFilePath);
+                            break;
+                        }
+                    }
+
+                } else {
+                    //Means it's up-to-date, so we can use the map in file
                     //Dividing bulk string into entry set parts
                     List<String> entrySets = Arrays.stream(currentString.replaceAll("[{}]", "")
                             .split(", ")).toList();
                     //Creating the map using a list of entry sets
                     prayerTimings = entrySets.stream().map(string -> string.split("="))
                             .collect(Collectors.toMap(strings -> strings[0], strings -> strings[1]));
-                } else {
-                    date = LocalDate.parse(currentString);
                 }
 
             }
         } catch (Exception ignored) {
         }
 
-        //If the date save in file isn't of today's date then it's outdated
-        //So we  call the api to fetch the up-to-date data and save it
-        // This is to eliminate unnecessary api calls (even-though this one is free :D )
-        if (!Objects.equals(date, LocalDate.now())) {
-            prayerTimings = ApiCaller.getPrayerTimings("Alexandria","EG");
-            if (prayerTimings != null) {
-                System.out.println("API CALLED");
-                FileHandler.writeToFile(prayerTimings.toString() + "\n" + LocalDate.now().toString(), FileHandler.prayerFilePath);
-            }
+
+
+
+
+
+        HomeForm homeForm = new HomeForm(prayerTimings, settings, adanScheduler, reminderScheduler);
+        homeForm.populateTable();
+        homeForm.startClock();
+        homeForm.prayerTimer2(prayerTimings);
+        if (settings.isAdan() && prayerTimings != null) {
+            adanScheduler.adanSchedule(prayerTimings);
         }
 
-        FileHandler.readFromFile(FileHandler.settingsFilePath);
-
-
-        HomeForm homeForm = new HomeForm();
-        homeForm.populateTable(prayerTimings);
-        homeForm.startClock();
-    //    homeForm.prayerTimer2(prayerTimings);
+        if (settings.isReminder() && prayerTimings != null) {
+            reminderScheduler.reminderSchedule(prayerTimings, settings.getPeriod());
+        }
 
 
 
-        Scheduler scheduler = new Scheduler();
-        Scheduler scheduler2 = new Scheduler();
-        TimeUnit unit = TimeUnit.SECONDS;
-        int period = 0;
-        long delay = 0;
-        long remainingTime = 0;
-        //Calculate time delay for each prayer
-/*        for (String prayer:sortedPrayers) {
-            LocalTime currPrayerTime =LocalTime.parse(prayerTimings.get(prayer));
-            //Check if prayer has already passed
-            if (!currPrayerTime.isBefore(LocalTime.now())) {
-                scheduler.schedule(() -> homeForm.prayerTimer(currPrayerTime,prayer),delay,unit);
-                //If not calculate delay
-                delay = Duration.between(LocalTime.now(),currPrayerTime).toSeconds() -(period*60);
-                remainingTime = Duration.between(LocalTime.now(),currPrayerTime).toMinutes();
-                System.out.println(" "+delay+" ");
-
-                scheduler2.schedule(Alarm.startAlarm, delay, unit);
-            }
-
-        }*/
+        Scheduler.updateTimings(prayerTimings,homeForm,adanScheduler,reminderScheduler,settings);
 
 
 
-//        HomeForm homeForm = new HomeForm();
 
-
-        //the delay in shutdown methods is the delay of last prayer +10
-        System.out.println("Delay= "+delay);
-        scheduler.shutdown();
-        scheduler2.shutdown();
 
 
 
@@ -111,8 +102,3 @@ public class Main {
 
 
 }
-//        SwingUtilities.invokeLater(new Runnable() {
-//            public void run() {
-//                MainForm.createAndShowGUI();
-//            }
-//        });

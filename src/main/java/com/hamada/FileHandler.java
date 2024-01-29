@@ -1,7 +1,7 @@
 package com.hamada;
 
 import java.awt.*;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 
 public class FileHandler {
 
-    public final static Path prayerFilePath = Paths.get("D:", "java-projects", "prayer_reminder", "local_data.txt");
+    public final static Path prayerFilePath = Paths.get(".", "local_data.txt");
     public final static Path settingsFilePath = Paths.get(".", "settings.txt");
 
      static public String readFromFile(Path filePath){
@@ -38,6 +38,38 @@ public class FileHandler {
             e.printStackTrace();
         }
     }
+
+    static public Settings readSettings() {
+        Settings settings = new Settings();
+
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(String.valueOf(FileHandler.settingsFilePath)))) {
+            settings = (Settings) ois.readObject();
+            System.out.println("Settings data loaded");
+        } catch (FileNotFoundException e) {
+            System.err.println("Settings file not found: " + e.getMessage());
+        } catch (IOException | ClassNotFoundException e) {
+            System.err.println("Error while reading settings: " + e.getMessage());
+        }
+
+        return settings;
+    }
+
+    static public void saveSettings(Settings settings) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(String.valueOf(FileHandler.settingsFilePath)))) {
+            oos.writeObject(settings);
+            System.out.println("Settings saved ") ;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
+
+
+
+
+
 
 
 
